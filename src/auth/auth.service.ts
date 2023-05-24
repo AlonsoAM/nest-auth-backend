@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as bcryptjs from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -9,6 +10,7 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -38,6 +40,34 @@ export class AuthService {
       }
       throw new InternalServerErrorException('Algo terrible sucedió!');
     }
+  }
+
+  async login(loginDto: LoginDto) {
+    // 1. obtener la data del loginDTO
+    const { email, password } = loginDto;
+    // 1. Buscar al usuario desde el email
+    const user = await this.userModel.findOne({ email });
+    // 3. Verificar si el usuario existe
+    if (!user) {
+      throw new UnauthorizedException('Usuario incorreto!');
+    }
+    // 4. Verificar la contraseña
+    if (!bcryptjs.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Password Inválido!');
+    }
+
+    // Obtener los datos del usuario a retornar, expluyendo la constraseña
+    const { password: _, ...rest } = user.toJSON();
+
+    // Retornar la respuesta
+    return {
+      user: rest,
+      token: '123',
+    };
+    /*
+     * User -> {_id, mane, email, roles}
+     * Token -> ASFasfds.asfsadfuasdigjadfsadfgadsg.sdfsadfas
+     */
   }
 
   findAll() {
