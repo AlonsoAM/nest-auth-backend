@@ -13,6 +13,8 @@ import { Model } from 'mongoose';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt.payload';
+import { LoginResponse } from './interfaces/login-response';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -47,7 +49,15 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async register(registerUserDto: RegisterUserDto): Promise<LoginResponse> {
+    const user = await this.create(registerUserDto);
+    return {
+      user: user,
+      token: this.getJwt({ id: user._id }),
+    };
+  }
+
+  async login(loginDto: LoginDto): Promise<LoginResponse> {
     // 1. obtener la data del loginDTO
     const { email, password } = loginDto;
     // 1. Buscar al usuario desde el email
