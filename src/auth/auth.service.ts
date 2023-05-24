@@ -12,7 +12,7 @@ import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './interfaces/jwt.payload';
+import { JwtPayload } from './interfaces/jwt-payload';
 import { LoginResponse } from './interfaces/login-response';
 import { RegisterUserDto } from './dto/register-user.dto';
 
@@ -91,8 +91,14 @@ export class AuthService {
     return token;
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  findAll(): Promise<User[]> {
+    return this.userModel.find();
+  }
+
+  async findUserById(id: string) {
+    const user = await this.userModel.findById(id);
+    const { password, ...rest } = user.toJSON();
+    return rest;
   }
 
   findOne(id: number) {
